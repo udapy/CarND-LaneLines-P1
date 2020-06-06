@@ -15,42 +15,36 @@ To complete the project, two files will be submitted: a file containing project 
 To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
 
 
-Creating a Great Writeup
+Writeup
 ---
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
+## The pipeline
+- [the notebook](P1.ipynb) a five step pipeline that will detect the left and right lane lines seperately, whereas lane line could be yellow-solid, white-solid, or white-dashed.
+- In first step, the lanes are segmented from color images. We convert this images from [HSL] (hue, saturation, lightness) color space, we are using this to process it pixel by pixel. the preprocessed lightness channel using an adaptive histogram equalization to see changes in illumination to get separate masks for yellow & white lines.
+[Pipeline: Yellow Mask](./examples/writeup_thresh_yellow.png)
+![Pipeline: White mask](./examples/Threshold.png)
 
-1. Describe the pipeline
+The region of intrest is masked using trapezoid cut from bottom of image.
+![Pipeline: ROI masking](./examples/ROI.png)
 
-2. Identify any shortcomings
+an edge image is obtained by applying Canny edge detection, reducing the lane lines to thin lines for further processing.
+![Pipeline: Canny edge detection](./examples/cunny_edges_detection.png)
 
-3. Suggest possible improvements
+An image is passed to a problistic hough transform that detects line segments. 
+A minimum line length segments in a valid distance are merged. Lines not agreeing with a valid range of slopes are discarded and the resulting lines are split by angle, extrapolated to a common length and averaged via their mean.
+![Pipeline: Hough transform](./examples/hough_transform.png)
 
-We encourage using images in your writeup to demonstrate how your pipeline works.  
+![Pipeline: Line refinement](./examples/final_lane_detection.png)
 
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
+A video of the pipeline at work,
 
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
----
-
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
-
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/83ec35ee-1e02-48a5-bdb7-d244bd47c2dc/lessons/8c82408b-a217-4d09-b81d-1bda4c6380ef/concepts/4f1870e0-3849-43e4-b670-12e6f2d4b7a7) if you haven't already.
-
-**Step 2:** Open the code in a Jupyter Notebook
-
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out [Udacity's free course on Anaconda and Jupyter Notebooks](https://classroom.udacity.com/courses/ud1111) to get started.
-
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
-
-`> jupyter notebook`
-
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
-
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+## shortcomings
+- This processing pipeline only take single images in consideration
+- It does'nt consider temporal and spatiotemporal correlations, and 
+- A set of daylight images only taken with specific camera, for better evaluation we night images could have been good.
+- Parameters are implicitly related to extrisic and instrisic camera parameters. eg. the angle filtering.
+- As far as tracking is concerned (rather than detection), it must be noted that the algorithm requires a clear view at the lane lines in order to "known" them in the first place. there no missing lane lines that result in loss of tracking.
+### Challenge video
+- While working on challenge video, it was found that HSV values of yellow lines were similar to surrounding concrete in some of situations. 
+It was solved using HSV color space with giving separate mask for yellow features only.
+So, taking simple assumptions about the scenario may lead to unforeseeable failures when the implementation meets new environments.
+Which makes accurate meassure of algorithm qaulity impossible to optimize.
